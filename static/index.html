@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EzeeChatBot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #faf9f7;
+      --card: #ffffff;
+      --border: #e8e4df;
+      --text: #2c2825;
+      --text-soft: #8a8480;
+      --accent: #c9a87c;
+      --accent-hover: #b8956a;
+      --user-bubble: #f3ede4;
+      --bot-bubble: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      width: 100%;
+      padding: 22px 0 16px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    .header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.3px; }
+    .header p { font-size: 0.75rem; color: var(--text-soft); margin-top: 3px; font-weight: 300; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px;
+      flex: 1;
+    }
+
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .right-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Card base ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    /* ── Upload ── */
+    .upload-section { padding: 22px; }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--bg);
+      color: var(--text-soft);
+      border: none;
+      transition: all 0.2s;
+    }
+    .tab.active { background: var(--card); color: var(--text); }
+    .tab:not(:last-child) { border-right: 1px solid var(--border); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      resize: vertical;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      transition: border 0.2s;
+    }
+    textarea:focus { border-color: var(--accent); }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #fdf8f2; }
+    .drop-zone p { font-size: 0.8rem; color: var(--text-soft); }
+    .drop-zone .icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
+    .drop-zone .formats { font-size: 0.68rem; color: var(--text-soft); margin-top: 5px; opacity: 0.7; }
+    .file-name { font-size: 0.78rem; color: var(--accent-hover); margin-top: 6px; font-weight: 500; }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--text);
+      color: var(--bg);
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .bot-id-display {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #f6f3ee;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      color: var(--text);
+      display: none;
+      word-break: break-all;
+    }
+    .bot-id-display span { font-weight: 600; color: var(--accent-hover); }
+    .bot-id-display .chunks { display: block; margin-top: 3px; color: var(--text-soft); font-size: 0.7rem; }
+
+    /* ── Stats ── */
+    .stats-section {
+      padding: 18px 22px;
+      display: none;
+    }
+    .stats-section.visible { display: block; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .stat-card {
+      text-align: center;
+      padding: 12px 6px;
+      background: var(--bg);
+      border-radius: 10px;
+    }
+    .stat-card .value { font-size: 1.3rem; font-weight: 600; color: var(--text); }
+    .stat-card .label {
+      font-size: 0.65rem;
+      color: var(--text-soft);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Chat ── */
+    .chat-section {
+      display: none;
+      flex-direction: column;
+      height: calc(100vh - 110px);
+      overflow: hidden;
+    }
+    .chat-section.visible { display: flex; }
+
+    .chat-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 110px);
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 0.85rem;
+    }
+    .chat-placeholder .icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .chat-placeholder.hidden { display: none; }
+
+    .chat-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-header h2 {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-soft);
+    }
+    .chat-bot-id { font-size: 0.66rem; color: var(--text-soft); font-family: monospace; opacity: 0.6; }
+
+    .messages {
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .msg {
+      max-width: 85%;
+      padding: 11px 15px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user-bubble);
+      border-bottom-right-radius: 4px;
+    }
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--bot-bubble);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+    .msg .label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-soft);
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+
+    .empty-chat {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-soft);
+      font-size: 0.8rem;
+      margin: auto;
+    }
+    .empty-chat .icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+
+    .chat-input {
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      transition: border 0.2s;
+    }
+    .chat-input input:focus { border-color: var(--accent); }
+    .chat-input button {
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--text);
+      color: var(--bg);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .chat-input button:hover { opacity: 0.85; }
+    .chat-input button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Typing ── */
+    .typing { display: flex; gap: 4px; padding: 11px 15px; align-self: flex-start; }
+    .typing span {
+      width: 5px; height: 5px;
+      background: var(--text-soft);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      padding: 11px 22px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { background: #c0392b; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 16px 12px;
+      }
+      .chat-section { height: auto; min-height: 500px; }
+      .chat-placeholder { height: auto; min-height: 300px; }
+      .right-col { order: 2; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>EzeeChatBot</h1>
+    <p>Upload a document. Ask anything about it.</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- ── Left Column: Upload + Stats ── -->
+    <div class="left-col">
+
+      <div class="card upload-section">
+        <h2 class="card-title">Upload Knowledge</h2>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('text')">Text</button>
+          <button class="tab" onclick="switchTab('url')">URL</button>
+          <button class="tab" onclick="switchTab('file')">File</button>
+        </div>
+
+        <div id="tab-text" class="tab-content active">
+          <textarea id="textInput" placeholder="Paste your content here..."></textarea>
+        </div>
+        <div id="tab-url" class="tab-content">
+          <input type="text" id="urlInput" placeholder="https://example.com/article" />
+        </div>
+        <div id="tab-file" class="tab-content">
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="icon">↑</span>
+            <p>Drop a file here or click to browse</p>
+            <span class="formats">PDF, TXT, DOCX</span>
+            <div class="file-name" id="fileName"></div>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.docx" hidden />
+        </div>
+
+        <button class="btn" id="uploadBtn" onclick="upload()">Upload</button>
+
+        <div class="bot-id-display" id="botIdDisplay">
+          Bot created → <span id="botIdText"></span>
+          <span class="chunks" id="chunksText"></span>
+        </div>
+      </div>
+
+      <div class="card stats-section" id="statsSection">
+        <h2 class="card-title">Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="value" id="statMessages">0</div>
+            <div class="label">Messages</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="statLatency">0</div>
+            <div class="label">Avg ms</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="statUnanswered">0</div>
+            <div class="label">Unanswered</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right Column: Chat ── -->
+    <div class="right-col">
+
+      <div class="card chat-placeholder" id="chatPlaceholder">
+        <div>
+          <span class="icon">←</span>
+          <p>Upload content first to start chatting</p>
+        </div>
+      </div>
+
+      <div class="card chat-section" id="chatSection">
+        <div class="chat-header">
+          <h2>Chat</h2>
+          <span class="chat-bot-id" id="chatBotId"></span>
+        </div>
+
+        <div class="messages" id="messages">
+          <div class="empty-chat">
+            <span class="icon">💬</span>
+            Ask something about the uploaded content
+          </div>
+        </div>
+
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendMessage()" />
+          <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentBotId = null;
+    let currentTab = 'text';
+    let selectedFile = null;
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', ['text','url','file'][i] === tab);
+      });
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        selectedFile = e.dataTransfer.files[0];
+        document.getElementById('fileName').textContent = selectedFile.name;
+      }
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        selectedFile = fileInput.files[0];
+        document.getElementById('fileName').textContent = selectedFile.name;
+      }
+    });
+
+    async function upload() {
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      btn.textContent = 'Uploading...';
+
+      try {
+        let res;
+        if (currentTab === 'file') {
+          if (!selectedFile) { toast('Select a file first', true); return; }
+          const fd = new FormData();
+          fd.append('file', selectedFile);
+          res = await fetch('/upload-file', { method: 'POST', body: fd });
+        } else if (currentTab === 'url') {
+          const url = document.getElementById('urlInput').value.trim();
+          if (!url) { toast('Enter a URL', true); return; }
+          res = await fetch('/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+          });
+        } else {
+          const text = document.getElementById('textInput').value.trim();
+          if (!text) { toast('Enter some text', true); return; }
+          res = await fetch('/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+        }
+
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Upload failed', true); return; }
+
+        currentBotId = data.bot_id;
+
+        document.getElementById('botIdText').textContent = data.bot_id;
+        document.getElementById('chunksText').textContent = data.chunks_created + ' chunks created' + (data.filename ? ' from ' + data.filename : '');
+        document.getElementById('botIdDisplay').style.display = 'block';
+
+        // Show chat, hide placeholder
+        document.getElementById('chatPlaceholder').classList.add('hidden');
+        document.getElementById('chatSection').classList.add('visible');
+        document.getElementById('statsSection').classList.add('visible');
+        document.getElementById('chatBotId').textContent = data.bot_id.slice(0, 8) + '...';
+
+        document.getElementById('messages').innerHTML = '<div class="empty-chat"><span class="icon">💬</span>Ask something about the uploaded content</div>';
+
+        toast('Knowledge uploaded');
+      } catch (e) {
+        toast('Upload failed — check server', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Upload';
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg || !currentBotId) return;
+
+      const messagesDiv = document.getElementById('messages');
+      const empty = messagesDiv.querySelector('.empty-chat');
+      if (empty) empty.remove();
+
+      messagesDiv.innerHTML += `<div class="msg user"><div class="label">You</div>${escapeHtml(msg)}</div>`;
+      input.value = '';
+      scrollDown();
+
+      messagesDiv.innerHTML += '<div class="typing" id="typing"><span></span><span></span><span></span></div>';
+      scrollDown();
+
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bot_id: currentBotId, user_message: msg })
+        });
+        const data = await res.json();
+
+        const typing = document.getElementById('typing');
+        if (typing) typing.remove();
+
+        if (!res.ok) {
+          messagesDiv.innerHTML += `<div class="msg bot"><div class="label">Bot</div>${escapeHtml(data.detail || 'Something went wrong')}</div>`;
+        } else {
+          renderHistory(data.conversation_history);
+        }
+
+        scrollDown();
+        loadStats();
+      } catch (e) {
+        const typing = document.getElementById('typing');
+        if (typing) typing.remove();
+        messagesDiv.innerHTML += '<div class="msg bot"><div class="label">Bot</div>Could not reach server</div>';
+        scrollDown();
+      } finally {
+        sendBtn.disabled = false;
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function renderHistory(history) {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = '';
+
+      if (!history || !history.length) {
+        messagesDiv.innerHTML = '<div class="empty-chat"><span class="icon">💬</span>Ask something about the uploaded content</div>';
+        return;
+      }
+
+      history.forEach(h => {
+        const isUser = h.role === 'user';
+        messagesDiv.innerHTML += `<div class="msg ${isUser ? 'user' : 'bot'}"><div class="label">${isUser ? 'You' : 'Bot'}</div>${escapeHtml(h.message)}</div>`;
+      });
+
+      scrollDown();
+    }
+
+    async function loadStats() {
+      if (!currentBotId) return;
+      try {
+        const res = await fetch('/stats/' + currentBotId);
+        const data = await res.json();
+        document.getElementById('statMessages').textContent = data.total_messages;
+        document.getElementById('statLatency').textContent = Math.round(data.avg_latency_ms);
+        document.getElementById('statUnanswered').textContent = data.unanswered;
+      } catch (e) {}
+    }
+
+    function scrollDown() {
+      const m = document.getElementById('messages');
+      m.scrollTop = m.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function toast(msg, isError) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => t.className = 'toast', 2500);
+    }
+  </script>
+
+</body>
+</html>
